@@ -1,0 +1,11 @@
+{
+  "name": "crc-backend-tests",
+  "private": true,
+  "description": "End-to-end smoke tests for the visitor counter API",
+  "scripts": {
+    "test:e2e": "cypress run"
+  },
+  "devDependencies": {
+    "cypress": "^16.2.1"
+  }
+}

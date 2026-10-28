@@ -86,15 +86,12 @@ jobs:
     needs: deploy
     runs-on: ubuntu-latest
     steps:
-      - name: API increments the counter and persists it
+      - uses: actions/checkout@v4
+      - name: Wait for the new deployment to answer
         env:
           API_URL: ${{ needs.deploy.outputs.apiUrl }}
-        run: |
-          set -euo pipefail
-          sleep 30
-          before=$(curl -fsS --retry 5 --retry-delay 10 --retry-all-errors "$API_URL" | jq .count)
-          after=$(curl -fsS -X POST "$API_URL" | jq .count)
-          persisted=$(curl -fsS "$API_URL" | jq .count)
-          echo "before=$before after=$after persisted=$persisted"
-          test "$after" -eq $((before + 1))
-          test "$persisted" -eq "$after"
+        run: curl -fsS --retry 8 --retry-delay 10 --retry-all-errors "$API_URL"
+      - name: Cypress end-to-end tests against the live API
+        uses: cypress-io/github-action@v6
+        env:
+          CYPRESS_API_URL: ${{ needs.deploy.outputs.apiUrl }}
