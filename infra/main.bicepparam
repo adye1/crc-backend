@@ -7,6 +7,7 @@ param functionAppName = 'func-crc-86960'
 param planName = 'EastUS2LinuxDynamicPlan'
 param logWorkspaceName = 'log-crc'
 param appInsightsName = 'appi-crc'
+param alertEmail = readEnvironmentVariable('ALERT_EMAIL', '')
 param allowedOrigins = [
   'https://adamdye.dev'
   'https://stcrcfront99661.z13.web.core.windows.net'
