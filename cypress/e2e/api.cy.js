@@ -1,11 +1,8 @@
 // End-to-end smoke tests: run against the deployed API, not a mock.
-const api = Cypress.env("API_URL");
+// The host comes from CYPRESS_BASE_URL (set by the pipeline); the route is fixed.
+const api = "/api/visitors";
 
 describe("visitor counter API", () => {
-  before(() => {
-    expect(api, "CYPRESS_API_URL must be set").to.be.a("string").and.not.be.empty;
-  });
-
   it("GET returns JSON with a numeric count", () => {
     cy.request("GET", api).then((res) => {
       expect(res.status).to.eq(200);
