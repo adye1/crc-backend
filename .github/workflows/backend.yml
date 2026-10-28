@@ -1,0 +1,76 @@
+name: backend
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  RESOURCE_GROUP: rg-crc-backend
+  FUNCTION_APP: func-crc-86960
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: api/requirements.txt
+      - run: pip install -r api/requirements.txt pytest
+      - run: python -m pytest api/tests -q
+      - name: Validate Bicep
+        run: az bicep build --file infra/main.bicep --stdout > /dev/null
+
+  deploy:
+    needs: test
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    outputs:
+      apiUrl: ${{ steps.infra.outputs.apiUrl }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Deploy infrastructure (Bicep)
+        id: infra
+        uses: azure/arm-deploy@v2
+        with:
+          resourceGroupName: ${{ env.RESOURCE_GROUP }}
+          template: infra/main.bicep
+          parameters: infra/main.bicepparam
+      - name: Deploy function code
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ env.FUNCTION_APP }}
+          package: api
+          scm-do-build-during-deployment: true
+          enable-oryx-build: true
+
+  smoke-test:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: API increments the counter and persists it
+        env:
+          API_URL: ${{ needs.deploy.outputs.apiUrl }}
+        run: |
+          set -euo pipefail
+          sleep 30
+          before=$(curl -fsS --retry 5 --retry-delay 10 --retry-all-errors "$API_URL" | jq .count)
+          after=$(curl -fsS -X POST "$API_URL" | jq .count)
+          persisted=$(curl -fsS "$API_URL" | jq .count)
+          echo "before=$before after=$after persisted=$persisted"
+          test "$after" -eq $((before + 1))
+          test "$persisted" -eq "$after"
