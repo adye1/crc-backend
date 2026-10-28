@@ -27,7 +27,7 @@ Every push to `main` runs, in order:
 1. **Test** — pytest unit tests and Bicep validation
 2. **Supply-chain checks** — Syft SBOM, Grype scan (fails on High or above), pip-audit as a second source
 3. **Deploy** — Bicep infrastructure, then the function code with its dependencies bundled
-4. **Smoke test** — calls the live API and checks the count rises by one and is persisted
+4. **Smoke test** — a Cypress suite calls the live API and checks that GET is read-only, POST raises the count by exactly one and persists it, and unsupported methods are rejected
 
 CodeQL runs separately on pushes, pull requests, and monthly. Details and residual risks: [docs/supply-chain.md](docs/supply-chain.md).
 
@@ -65,4 +65,4 @@ To run the function you also need `local.settings.json` with a `COSMOS_TABLE_CON
 - The Cosmos key sits in a Function App setting. A managed identity with data-plane RBAC would remove it.
 - GitHub Actions are pinned by version tag, not commit SHA.
 - Linux Consumption reaches end of life in September 2028. Moving to Flex Consumption is planned.
-- The smoke test uses `curl`. A Cypress suite is planned.
+- Request telemetry goes to Application Insights, but there are no alert rules or action group yet.
