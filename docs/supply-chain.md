@@ -28,11 +28,12 @@ flowchart LR
 | Insecure code or workflow | CodeQL scans Python/JavaScript and the GitHub Actions workflows themselves |
 | Leaked secret committed | GitHub secret scanning with push protection; `.gitignore` excludes `local.settings.json` and key files |
 | Forged commit authorship | Signed commits (see below) |
+| Moved or hijacked action tag | Every action pinned to a commit SHA |
 | Overprivileged pipeline | Each pipeline identity is Contributor on its own resource group only |
 
 ## Residual risk and next steps
 
-- Third-party actions are referenced by version tag, not commit SHA. A compromised tag would run in the pipeline. Pin by SHA if this handled sensitive data.
+- Third-party actions are pinned to commit SHAs with the tag in a comment, and Dependabot proposes SHA updates. A compromised upstream release still needs a human to approve the bump.
 - Requirements are not pinned to exact versions or hashes, so a build can pick up a newer release than the one tested. A lock file with hashes would close that.
 - Solo repo: there is no second reviewer. With collaborators, require pull-request review and signed commits through a branch ruleset.
 - The Function App stores its Cosmos key in an app setting. A managed identity with data-plane RBAC would remove the stored key.

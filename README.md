@@ -63,6 +63,9 @@ To run the function you also need `local.settings.json` with a `COSMOS_TABLE_CON
 ## Known gaps
 
 - The Cosmos key sits in a Function App setting. A managed identity with data-plane RBAC would remove it.
-- GitHub Actions are pinned by version tag, not commit SHA.
 - Linux Consumption reaches end of life in September 2028. Moving to Flex Consumption is planned.
-- Request telemetry goes to Application Insights, but there are no alert rules or action group yet.
+- Cosmos DB's Table API does not support Entra ID data-plane authentication, so the account key is injected into an app setting at deploy time. A Key Vault reference would improve this but needs extra pipeline permissions.
+
+## Monitoring
+
+Request telemetry goes to Application Insights and Log Analytics (capped at 0.1 GB/day). Metric alerts for server errors, request surges, and slow responses notify an email action group; the address comes from a GitHub secret, not the repository. Scale-out is capped at two instances.
