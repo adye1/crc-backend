@@ -1,0 +1,13 @@
+node_modules/
+.env
+*.env
+local.settings.json
+*.pem
+*.pfx
+*.key
+.vscode/
+__pycache__/
+.venv/
+.pytest_cache/
+cypress/videos/
+cypress/screenshots/
