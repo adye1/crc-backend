@@ -41,7 +41,7 @@ jobs:
           output-file: sbom.spdx.json
           artifact-name: sbom.spdx.json
       - name: Vulnerability scan 1 - Grype (fails on High or above)
-        uses: anchore/scan-action@v6
+        uses: anchore/scan-action@v7
         with:
           sbom: sbom.spdx.json
           fail-build: true
