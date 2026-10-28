@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
@@ -71,7 +71,7 @@ jobs:
           resourceGroupName: ${{ env.RESOURCE_GROUP }}
           template: infra/main.bicep
           parameters: infra/main.bicepparam
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - name: Bundle Python dependencies into the package
