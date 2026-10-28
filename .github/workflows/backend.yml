@@ -50,13 +50,16 @@ jobs:
           resourceGroupName: ${{ env.RESOURCE_GROUP }}
           template: infra/main.bicep
           parameters: infra/main.bicepparam
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Bundle Python dependencies into the package
+        run: pip install -r api/requirements.txt --target api/.python_packages/lib/site-packages
       - name: Deploy function code
         uses: Azure/functions-action@v1
         with:
           app-name: ${{ env.FUNCTION_APP }}
           package: api
-          scm-do-build-during-deployment: true
-          enable-oryx-build: true
 
   smoke-test:
     needs: deploy
