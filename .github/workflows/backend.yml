@@ -30,6 +30,27 @@ jobs:
       - name: Validate Bicep
         run: az bicep build --file infra/main.bicep --stdout > /dev/null
 
+      # Supply-chain checks: SBOM of what actually ships, then two independent vulnerability sources
+      - name: Install dependencies as they will ship
+        run: pip install -r api/requirements.txt --target api/.python_packages/lib/site-packages
+      - name: Generate SBOM (Syft)
+        uses: anchore/sbom-action@v0
+        with:
+          path: api/.python_packages
+          format: spdx-json
+          output-file: sbom.spdx.json
+          artifact-name: sbom.spdx.json
+      - name: Vulnerability scan 1 - Grype (fails on High or above)
+        uses: anchore/scan-action@v6
+        with:
+          sbom: sbom.spdx.json
+          fail-build: true
+          severity-cutoff: high
+      - name: Vulnerability scan 2 - pip-audit (PyPI advisory data)
+        run: |
+          pip install pip-audit
+          pip-audit -r api/requirements.txt
+
   deploy:
     needs: test
     if: github.event_name != 'pull_request'
