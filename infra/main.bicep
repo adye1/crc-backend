@@ -10,6 +10,29 @@ param cosmosName string
 param functionStorageName string
 param functionAppName string
 param planName string
+param logWorkspaceName string
+param appInsightsName string
+
+resource logs 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
+  name: logWorkspaceName
+  location: location
+  properties: {
+    sku: { name: 'PerGB2018' }
+    retentionInDays: 30
+    workspaceCapping: { dailyQuotaGb: json('0.1') }   // cost guard for a hobby project
+  }
+}
+
+resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
+  name: appInsightsName
+  location: location
+  kind: 'web'
+  properties: {
+    Application_Type: 'web'
+    WorkspaceResourceId: logs.id
+    IngestionMode: 'LogAnalytics'
+  }
+}
 
 resource cosmos 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
   name: cosmosName
@@ -78,6 +101,7 @@ resource func 'Microsoft.Web/sites@2023-12-01' = {
         { name: 'FUNCTIONS_EXTENSION_VERSION', value: '~4' }
         { name: 'FUNCTIONS_WORKER_RUNTIME', value: 'python' }
         { name: 'COSMOS_TABLE_CONNECTION', value: cosmosConn }
+        { name: 'APPLICATIONINSIGHTS_CONNECTION_STRING', value: appInsights.properties.ConnectionString }
       ]
     }
   }
