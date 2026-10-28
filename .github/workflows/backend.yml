@@ -19,8 +19,8 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
         with:
           python-version: "3.12"
           cache: pip
@@ -34,14 +34,14 @@ jobs:
       - name: Install dependencies as they will ship
         run: pip install -r api/requirements.txt --target api/.python_packages/lib/site-packages
       - name: Generate SBOM (Syft)
-        uses: anchore/sbom-action@v0
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0
         with:
           path: api/.python_packages
           format: spdx-json
           output-file: sbom.spdx.json
           artifact-name: sbom.spdx.json
       - name: Vulnerability scan 1 - Grype (fails on High or above)
-        uses: anchore/scan-action@v7
+        uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2 # v7
         with:
           sbom: sbom.spdx.json
           fail-build: true
@@ -58,26 +58,26 @@ jobs:
     outputs:
       apiUrl: ${{ steps.infra.outputs.apiUrl }}
     steps:
-      - uses: actions/checkout@v7
-      - uses: azure/login@v3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Deploy infrastructure (Bicep)
         id: infra
-        uses: azure/arm-deploy@v2
+        uses: azure/arm-deploy@a1361c2c2cd398621955b16ca32e01c65ea340f5 # v2
         with:
           resourceGroupName: ${{ env.RESOURCE_GROUP }}
           template: infra/main.bicep
           parameters: infra/main.bicepparam
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
         with:
           python-version: "3.12"
       - name: Bundle Python dependencies into the package
         run: pip install -r api/requirements.txt --target api/.python_packages/lib/site-packages
       - name: Deploy function code
-        uses: Azure/functions-action@v1
+        uses: Azure/functions-action@c5060b3b8bb1ebbcb531abd00c822ecbaa8ea656 # v1
         with:
           app-name: ${{ env.FUNCTION_APP }}
           package: api
@@ -86,7 +86,7 @@ jobs:
     needs: deploy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Wait for the new deployment to answer
         env:
           API_URL: ${{ needs.deploy.outputs.apiUrl }}
@@ -94,4 +94,4 @@ jobs:
           curl -fsS --retry 8 --retry-delay 10 --retry-all-errors "$API_URL"
           echo "CYPRESS_BASE_URL=${API_URL%/api/visitors}" >> "$GITHUB_ENV"
       - name: Cypress end-to-end tests against the live API
-        uses: cypress-io/github-action@v6
+        uses: cypress-io/github-action@f790eee7a50d9505912f50c2095510be7de06aa7 # v6
