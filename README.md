@@ -5,7 +5,7 @@
 
 Serverless visitor-counter API for my resume site ([frontend repo](https://github.com/adye1/crc-frontend)). Built for the [Cloud Resume Challenge](https://cloudresumechallenge.dev/), Azure edition, with a security-first pipeline.
 
-**Live site:** https://stcrcfront99661.z13.web.core.windows.net/ (custom domain still to come)
+**Live site:** https://adamdye.dev/
 
 ## Architecture
 
